@@ -1,12 +1,28 @@
 import { useState } from 'react';
 import Header from './components/Header';
+import ProfileCard from './components/ProfileCard';
+import { fetchUserProfile } from './services/githubApi';
 
 function App() {
   const [searchedUser, setSearchedUser] = useState('');
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSearch = (username) => {
+  const handleSearch = async (username) => {
     setSearchedUser(username);
-    // Future: Fetch user data and repos here
+    setLoading(true);
+    setError(null);
+    setProfile(null);
+    
+    try {
+      const data = await fetchUserProfile(username);
+      setProfile(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,12 +56,32 @@ function App() {
               Enter a username above to analyze their profile, top languages, and popular repositories.
             </p>
           </div>
-        ) : (
-          <div>
-            <p className="text-muted-foreground">Searching for <span className="font-semibold text-foreground">{searchedUser}</span>...</p>
-            {/* Future: Render ProfileCard, StatsRow, LanguageChart, RepoGrid here */}
+        ) : loading ? (
+          <div className="space-y-6">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start animate-pulse">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-muted"></div>
+              <div className="flex-1 space-y-4 w-full">
+                <div className="h-8 bg-muted rounded w-1/3"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-5/6"></div>
+                <div className="flex gap-4 pt-2">
+                  <div className="h-8 bg-muted rounded w-24"></div>
+                  <div className="h-8 bg-muted rounded w-24"></div>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+        ) : error ? (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-destructive">{error}</h3>
+            <p className="text-muted-foreground mt-2">Try searching for a different username.</p>
+          </div>
+        ) : profile ? (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <ProfileCard profile={profile} />
+            {/* Future: Render StatsRow, LanguageChart, RepoGrid here */}
+          </div>
+        ) : null}
       </main>
     </div>
   );
