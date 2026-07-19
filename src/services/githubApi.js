@@ -12,3 +12,15 @@ export const fetchUserProfile = async (username) => {
   
   return response.json();
 };
+
+export const fetchUserRepos = async (username) => {
+  // Fetch up to 100 repos, sorted by recently updated
+  const response = await fetch(`${BASE_URL}/users/${username}/repos?per_page=100&sort=updated`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch repositories');
+  }
+  
+  return response.json();
+};
+
