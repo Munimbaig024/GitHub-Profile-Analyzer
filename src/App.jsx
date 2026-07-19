@@ -3,6 +3,7 @@ import Header from './components/Header';
 import ProfileCard from './components/ProfileCard';
 import StatsRow from './components/StatsRow';
 import LanguageChart from './components/LanguageChart';
+import RepoGrid from './components/RepoGrid';
 import { fetchUserProfile, fetchUserRepos } from './services/githubApi';
 
 function App() {
@@ -97,7 +98,7 @@ function App() {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <LanguageChart repos={repos} />
-              {/* Future: Render RepoGrid here */}
+              <RepoGrid repos={repos} />
             </div>
           </div>
         ) : null}
