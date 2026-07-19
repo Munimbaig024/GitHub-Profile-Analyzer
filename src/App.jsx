@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import Header from './components/Header';
 import ProfileCard from './components/ProfileCard';
-import { fetchUserProfile } from './services/githubApi';
+import StatsRow from './components/StatsRow';
+import LanguageChart from './components/LanguageChart';
+import { fetchUserProfile, fetchUserRepos } from './services/githubApi';
 
 function App() {
   const [searchedUser, setSearchedUser] = useState('');
   const [profile, setProfile] = useState(null);
+  const [repos, setRepos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -14,10 +17,15 @@ function App() {
     setLoading(true);
     setError(null);
     setProfile(null);
+    setRepos([]);
     
     try {
-      const data = await fetchUserProfile(username);
-      setProfile(data);
+      const [profileData, reposData] = await Promise.all([
+        fetchUserProfile(username),
+        fetchUserRepos(username)
+      ]);
+      setProfile(profileData);
+      setRepos(reposData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,6 +78,12 @@ function App() {
                 </div>
               </div>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-pulse">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-24 bg-muted rounded-2xl"></div>
+              ))}
+            </div>
+            <div className="h-80 bg-muted rounded-2xl animate-pulse"></div>
           </div>
         ) : error ? (
           <div className="text-center py-12">
@@ -79,7 +93,12 @@ function App() {
         ) : profile ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <ProfileCard profile={profile} />
-            {/* Future: Render StatsRow, LanguageChart, RepoGrid here */}
+            <StatsRow repos={repos} />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <LanguageChart repos={repos} />
+              {/* Future: Render RepoGrid here */}
+            </div>
           </div>
         ) : null}
       </main>
