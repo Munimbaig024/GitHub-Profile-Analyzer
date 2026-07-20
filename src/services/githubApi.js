@@ -24,3 +24,13 @@ export const fetchUserRepos = async (username) => {
   return response.json();
 };
 
+export const searchUsers = async (query) => {
+  // Search for users, getting up to 12 results
+  const response = await fetch(`${BASE_URL}/search/users?q=${encodeURIComponent(query)}&per_page=12`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to search users');
+  }
+  
+  return response.json();
+};

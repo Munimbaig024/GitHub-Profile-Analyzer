@@ -4,21 +4,23 @@ import ProfileCard from './components/ProfileCard';
 import StatsRow from './components/StatsRow';
 import LanguageChart from './components/LanguageChart';
 import RepoGrid from './components/RepoGrid';
-import { fetchUserProfile, fetchUserRepos } from './services/githubApi';
+import UserSearchResults from './components/UserSearchResults';
+import { fetchUserProfile, fetchUserRepos, searchUsers } from './services/githubApi';
 
 function App() {
   const [searchedUser, setSearchedUser] = useState('');
   const [profile, setProfile] = useState(null);
   const [repos, setRepos] = useState([]);
+  const [searchResults, setSearchResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSearch = async (username) => {
-    setSearchedUser(username);
+  const fetchFullProfile = async (username) => {
     setLoading(true);
     setError(null);
     setProfile(null);
     setRepos([]);
+    setSearchResults(null);
     
     try {
       const [profileData, reposData] = await Promise.all([
@@ -27,6 +29,40 @@ function App() {
       ]);
       setProfile(profileData);
       setRepos(reposData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (query) => {
+    setSearchedUser(query);
+    setLoading(true);
+    setError(null);
+    setProfile(null);
+    setRepos([]);
+    setSearchResults(null);
+    
+    try {
+      // If the query contains spaces, skip exact match and go straight to search
+      if (query.includes(' ')) {
+        const searchData = await searchUsers(query);
+        setSearchResults(searchData.items);
+      } else {
+        // Try exact match first
+        try {
+          await fetchFullProfile(query);
+        } catch (err) {
+          if (err.message === 'User not found') {
+            // Fallback to search if exact match fails
+            const searchData = await searchUsers(query);
+            setSearchResults(searchData.items);
+          } else {
+            throw err;
+          }
+        }
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -90,6 +126,10 @@ function App() {
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-destructive">{error}</h3>
             <p className="text-muted-foreground mt-2">Try searching for a different username.</p>
+          </div>
+        ) : searchResults ? (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <UserSearchResults users={searchResults} onSelectUser={fetchFullProfile} />
           </div>
         ) : profile ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
