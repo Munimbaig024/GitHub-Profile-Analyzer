@@ -24,12 +24,23 @@ export const fetchUserRepos = async (username) => {
   return response.json();
 };
 
-export const searchUsers = async (query) => {
-  // Search for users, getting up to 12 results
-  const response = await fetch(`${BASE_URL}/search/users?q=${encodeURIComponent(query)}&per_page=12`);
+export const searchUsers = async (query, page = 1) => {
+  // Search for users, getting up to 12 results per page
+  const response = await fetch(`${BASE_URL}/search/users?q=${encodeURIComponent(query)}&per_page=12&page=${page}`);
   
   if (!response.ok) {
     throw new Error('Failed to search users');
+  }
+  
+  return response.json();
+};
+
+export const searchGlobalRepos = async (query, page = 1) => {
+  // Search for repositories, getting up to 12 results per page
+  const response = await fetch(`${BASE_URL}/search/repositories?q=${encodeURIComponent(query)}&per_page=12&page=${page}`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to search repositories');
   }
   
   return response.json();

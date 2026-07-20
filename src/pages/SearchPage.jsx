@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserSearchResults from '../components/UserSearchResults';
-import { searchUsers } from '../services/githubApi';
+import RepoSearchResults from '../components/RepoSearchResults';
+import { searchUsers, searchGlobalRepos } from '../services/githubApi';
 
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const query = queryParams.get('q');
+  const type = queryParams.get('type') || 'users';
 
   const [searchResults, setSearchResults] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -26,9 +28,13 @@ const SearchPage = () => {
       setLoading(true);
       setError(null);
       setSearchPage(1);
+      setSearchResults([]);
 
       try {
-        const data = await searchUsers(query, 1);
+        const data = type === 'repos' 
+          ? await searchGlobalRepos(query, 1)
+          : await searchUsers(query, 1);
+          
         setSearchResults(data.items);
         setTotalCount(data.total_count);
       } catch (err) {
@@ -39,7 +45,7 @@ const SearchPage = () => {
     };
 
     fetchSearch();
-  }, [query, navigate]);
+  }, [query, type, navigate]);
 
   const handleLoadMore = async () => {
     if (loadingMore) return;
@@ -47,7 +53,10 @@ const SearchPage = () => {
 
     try {
       const nextPage = searchPage + 1;
-      const data = await searchUsers(query, nextPage);
+      const data = type === 'repos'
+        ? await searchGlobalRepos(query, nextPage)
+        : await searchUsers(query, nextPage);
+        
       setSearchResults(prev => [...prev, ...data.items]);
       setSearchPage(nextPage);
     } catch (err) {
@@ -76,14 +85,24 @@ const SearchPage = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <UserSearchResults 
-        users={searchResults} 
-        totalCount={totalCount}
-        onLoadMore={handleLoadMore}
-        loadingMore={loadingMore}
-      />
+      {type === 'repos' ? (
+        <RepoSearchResults 
+          repos={searchResults} 
+          totalCount={totalCount}
+          onLoadMore={handleLoadMore}
+          loadingMore={loadingMore}
+        />
+      ) : (
+        <UserSearchResults 
+          users={searchResults} 
+          totalCount={totalCount}
+          onLoadMore={handleLoadMore}
+          loadingMore={loadingMore}
+        />
+      )}
     </div>
   );
 };
 
 export default SearchPage;
+
