@@ -1,13 +1,42 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Moon, Sun } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Header = ({ onSearch }) => {
+const Header = () => {
   const [username, setUsername] = useState('');
+  const [isDark, setIsDark] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check local storage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setIsDark(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    if (!isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (username.trim()) {
-      onSearch(username.trim());
+      if (username.trim().includes(' ')) {
+        navigate(`/search?q=${encodeURIComponent(username.trim())}`);
+      } else {
+        navigate(`/user/${encodeURIComponent(username.trim())}`);
+      }
     }
   };
 
@@ -15,7 +44,7 @@ const Header = ({ onSearch }) => {
     <header className="w-full py-6 px-4 md:px-8 border-b border-border bg-card shadow-sm sticky top-0 z-10">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Logo and Title */}
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="32"
@@ -34,27 +63,37 @@ const Header = ({ onSearch }) => {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground m-0 p-0">
             GitHub <span className="text-muted-foreground font-medium">Analyzer</span>
           </h1>
-        </div>
+        </Link>
 
-        {/* Search Bar */}
-        <form onSubmit={handleSubmit} className="w-full md:w-[400px] relative group">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-accent-foreground transition-colors" />
-          </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-4 py-2.5 border border-border rounded-2xl leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
-            placeholder="Enter a GitHub username..."
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="absolute inset-y-1.5 right-1.5 px-4 bg-foreground text-background text-sm font-medium rounded-xl hover:bg-muted-foreground transition-colors"
+        {/* Search Bar & Theme Toggle */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <form onSubmit={handleSubmit} className="w-full md:w-[400px] relative group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-accent-foreground transition-colors" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-4 py-2.5 border border-border rounded-2xl leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
+              placeholder="Enter a GitHub username..."
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="absolute inset-y-1.5 right-1.5 px-4 bg-foreground text-background text-sm font-medium rounded-xl hover:bg-muted-foreground transition-colors"
+            >
+              Search
+            </button>
+          </form>
+          
+          <button 
+            onClick={toggleTheme}
+            className="p-2.5 rounded-xl border border-border bg-background text-foreground hover:bg-muted transition-colors flex-shrink-0"
+            aria-label="Toggle Dark Mode"
           >
-            Search
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
-        </form>
+        </div>
       </div>
     </header>
   );

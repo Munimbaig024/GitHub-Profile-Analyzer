@@ -14,6 +14,7 @@ A clean, modern dashboard to explore GitHub universes. Built with React, Vite, T
 ## Tech Stack
 
 - [React](https://reactjs.org/)
+- [React Router](https://reactrouter.com/) (Routing)
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS v3](https://tailwindcss.com/)
 - [Recharts](https://recharts.org/)

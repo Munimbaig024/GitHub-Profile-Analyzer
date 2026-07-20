@@ -63,6 +63,17 @@ const ProfileCard = ({ profile }) => {
             <span className="font-semibold text-foreground">{profile.following}</span> <span className="text-muted-foreground">Following</span>
           </div>
         </div>
+
+        <div className="pt-4">
+          <a
+            href={profile.html_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6"
+          >
+            View on GitHub
+          </a>
+        </div>
       </div>
     </div>
   );
